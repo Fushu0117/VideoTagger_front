@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./css/style.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css"
+    />
+    <script
+      src="https://kit.fontawesome.com/533f790df8.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+      crossorigin="anonymous"
+    ></script>
+    <title id="page-title">Player</title>
+  </head>
+  <body>
+    <style>
+      .yt {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 56.25%;
+      }
+      .yt iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 2%;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        width: 100vw;
+      }
+      .container-player {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 50%;
+        margin: 0 25px;
+      }
+      .container-player .mt-2 {
+        display: flex;
+        justify-content: space-between;
+        width: 50%;
+      }
+      .container-timestamp {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 50%;
+        overflow-y: scroll;
+        height: 80vh;
+      }
+      .video-author {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 1rem;
+      }
+      .video-author p {
+        margin-right: 0.5rem;
+      }
+
+      #botones {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin-top: 2rem;
+      }
+
+      #botones button {
+        margin-right: 1rem;
+      }
+
+      .video-views {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+      }
+
+      .video-views p {
+        margin-right: 0.5rem;
+        font-weight: bold;
+      }
+    </style>
+
+    <h1 id="video-title" class="text-center m-5"></h1>
+    <div class="container">
+      <div class="container-player">
+        <div class="video-author">
+          <p>Subido por:</p>
+          <p id="video-author"></p>
+        </div>
+        <div class="yt" id="yt"></div>
+        <div class="mt-2" id="botones">
+          <button class="btn btn-outline-secondary m-1" id="btn-home">
+            Regresar
+          </button>
+          <button
+            class="btn btn-primary m-1 text-nowrap"
+            data-bs-toggle="modal"
+            data-bs-target="#contenedor-modal"
+            id="btn-timestamp"
+          >
+            Crear timestamp
+          </button>
+          <div class="video-views ms-2">
+            <!-- <p class="mb-0">Visitas:</p>
+            <p id="video-views-count" class="mb-0">0</p> -->
+          </div>
+        </div>
+
+        <div class="modal fade" id="contenedor-modal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form>
+                <div class="modal-header">
+                  <h5 class="modal-title">Crear timestamp</h5>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                    id="btn-closeModal"
+                  ></button>
+                </div>
+                <div class="modal-body">
+                  <div class="form-group">
+                    <label for="timestamp-input" class="m-2">Tiempo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="timestamp-input"
+                      placeholder="01:00:00"
+                      pattern="^(?:([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?)$"
+                      disabled
+                      required
+                    />
+                    <label for="exampleFormControlInput2" class="m-2"
+                      >Nota</label
+                    >
+                    <textarea
+                      class="form-control"
+                      id="exampleFormControlInput2"
+                      rows="3"
+                      required
+                    ></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                  >
+                    Close
+                  </button>
+                  <button class="btn btn-primary" id="btn-save">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container-timestamp">
+        <h2>Etiquetas</h2>
+        <div class="row" id="timestamp"></div>
+      </div>
+    </div>
+    <script src="js/index.js" type="module"></script>
+    <script>
+      // const API_TAGS =
+      //   "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/tags";
+      const API_TAGS = "http://localhost:3001/api/tag";
+      const API_KEY = "AIzaSyAZ9QFnClI7dRm22yzVHicCCVkHrB-5Lo4";
+      let videoPlayer;
+
+      // Función principal para cargar el video y la información
+      function loadVideo() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get("id");
+
+        const videoUrl = `https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media`;
+        videoPlayer = createVideoPlayer(videoUrl);
+
+        const playerDiv = document.getElementById("yt");
+        playerDiv.appendChild(videoPlayer);
+
+        const video = JSON.parse(localStorage.getItem("videoInfo"));
+        updateVideoInfo(video);
+
+        const btn_home = document.querySelector("#btn-home");
+        btn_home?.addEventListener("click", () => {
+          navigateToProfile();
+        });
+
+        const btn_timestamp = document.querySelector("#btn-timestamp");
+        btn_timestamp?.addEventListener("click", () => {
+          let timestamp = document.querySelector("#timestamp-input");
+          let time = videoPlayer.currentTime;
+          let hours = Math.floor(time / 3600);
+          let minutes = Math.floor((time - hours * 3600) / 60);
+          let seconds = Math.floor(time - hours * 3600 - minutes * 60);
+          if (hours < 10) {
+            hours = "0" + hours;
+          }
+          if (minutes < 10) {
+            minutes = "0" + minutes;
+          }
+          if (seconds < 10) {
+            seconds = "0" + seconds;
+          }
+          timestamp.value = `${hours}:${minutes}:${seconds}`;
+        });
+
+        const form = document.querySelector("form");
+        form.addEventListener("submit", handleFormSubmit);
+
+        fetchComments(id, video.email);
+      }
+
+      // Crea el reproductor de video
+      function createVideoPlayer(videoUrl) {
+        const videoPlayer = document.createElement("video");
+        videoPlayer.controls = true;
+        videoPlayer.width = "560";
+        videoPlayer.height = "315";
+        videoPlayer.classList.add("border-2");
+
+        const source = document.createElement("source");
+        source.type = "video/mp4";
+        source.src = videoUrl;
+        videoPlayer.appendChild(source);
+
+        return videoPlayer;
+      }
+
+      // Actualiza la información del video
+      function updateVideoInfo(video) {
+        const video_title = document.querySelector("#video-title");
+        const page_title = document.querySelector("#page-title");
+        const video_views = document.querySelector("#video-views-count");
+        const video_author = document.querySelector("#video-author");
+
+        video_title.innerHTML = video.name;
+        page_title.innerHTML = video.name;
+        // video_views.innerHTML = video.views;
+        video_author.innerHTML = video.user_name;
+      }
+
+      // Navega al timestamp indicado
+      function navigateToTimestamp(videoPlayer, timestamp) {
+        videoPlayer.currentTime = timestamp; // Seek to 2 minutes and 30 seconds
+        videoPlayer.play();
+      }
+
+      // Navega al perfil del usuario
+      function navigateToProfile() {
+        window.location.href = "profile.html";
+      }
+
+      // Maneja el envío del formulario
+      function handleFormSubmit(e) {
+        e.preventDefault();
+        const timestampInput = document.querySelector("#timestamp-input").value;
+        const note = document.querySelector("#exampleFormControlInput2").value;
+
+        const video = JSON.parse(localStorage.getItem("videoInfo"));
+        const id = getVideoId();
+        const data = {
+          note,
+          timestamp: timestampInput,
+          user: video.email,
+          video: id,
+          videoTitle: video.name,
+        };
+
+        saveComment(data);
+      }
+
+      // Guarda el comentario en la base de datos
+      function saveComment(data) {
+        fetch(API_TAGS, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            appendComment(data.data[0]);
+            closeCommentModal();
+          });
+      }
+
+      // Obtiene el ID del video de la URL
+      function getVideoId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("id");
+      }
+
+      // Cierra el modal de comentario
+      function closeCommentModal() {
+        const btn_closeModal = document.querySelector("#btn-closeModal");
+        btn_closeModal.click();
+      }
+
+      // Agrega el comentario a la lista de comentarios
+      function appendComment(comment) {
+        const commentList = document.querySelector("#comment-list");
+        const commentItem = createCommentItem(comment);
+        commentList.appendChild(commentItem);
+      }
+
+      // Crea un elemento de comentario
+      function createCommentItem(comment) {
+        const commentItem = document.createElement("li");
+        commentItem.classList.add("single-comment", "fade-in");
+        commentItem.id = `cmt_${comment.id}`;
+        commentItem.style.opacity = "1";
+
+        const commentInfo = document.createElement("span");
+        commentInfo.classList.add("comment-info");
+
+        const author = document.createElement("span");
+        author.classList.add("author");
+        author.innerHTML = comment.user_name;
+
+        const timestamp = document.createElement("a");
+        timestamp.classList.add("timestamp");
+        timestamp.innerHTML = comment.timestamp;
+        timestamp.addEventListener("click", () => {
+          console.log("timestamp: ", comment.timestamp);
+          let totalSeconds = convertTimeToSeconds(comment.timestamp);
+          navigateToTimestamp(videoPlayer, totalSeconds);
+        });
+
+        const deleteComment = document.createElement("a");
+        deleteComment.classList.add("delete-comment");
+        deleteComment.innerHTML = `<i class="bi bi-trash"></i>`;
+        deleteComment.addEventListener("click", () => {
+          deleteCommentById(comment.id);
+        });
+
+        const commentText = document.createElement("span");
+        commentText.classList.add("comment-text");
+        commentText.innerHTML = comment.note;
+
+        commentInfo.appendChild(author);
+        commentInfo.appendChild(timestamp);
+        commentInfo.appendChild(deleteComment);
+        commentItem.appendChild(commentInfo);
+        commentItem.appendChild(commentText);
+
+        return commentItem;
+      }
+
+      // Elimina un comentario por su ID
+      function deleteCommentById(commentId) {
+        fetch(`${API_TAGS}/${commentId}`, {
+          method: "DELETE",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            const commentItem = document.getElementById(`cmt_${commentId}`);
+            commentItem.remove();
+
+            const commentList = document.querySelector("#comment-list");
+            if (commentList.children.length === 0) {
+              commentList.remove();
+            }
+          });
+      }
+
+      // Obtiene y muestra los comentarios existentes
+      function fetchComments(id, email) {
+        fetch(`${API_TAGS}/${id}/${email}`)
+          .then((res) => res.json())
+          .then((data) => {
+            const comments = data.data;
+            if (comments.length === 0) {
+              displayNoCommentsMessage();
+            } else {
+              const commentList = createCommentList();
+              comments.forEach((comment) => {
+                const commentItem = createCommentItem(comment);
+                commentList.appendChild(commentItem);
+              });
+              appendCommentList(commentList);
+            }
+          })
+          .catch((err) => {
+            displayNoCommentsMessage();
+          });
+      }
+
+      // Crea una lista de comentarios
+      function createCommentList() {
+        const commentList = document.createElement("ol");
+        commentList.classList.add("comment-list");
+        commentList.id = "comment-list";
+        commentList.style.height = "540px";
+        return commentList;
+      }
+
+      // Muestra un mensaje de "No se encontraron comentarios"
+      function displayNoCommentsMessage() {
+        const commentList = createCommentList();
+
+        const message = document.createElement("p");
+        message.innerHTML = "No se encontraron comentarios";
+        commentList.appendChild(message);
+
+        appendCommentList(commentList);
+      }
+
+      // Agrega la lista de comentarios a la página
+      function appendCommentList(commentList) {
+        const containerTimestamp = document.querySelector(
+          ".container-timestamp"
+        );
+        containerTimestamp.appendChild(commentList);
+      }
+
+      // utils
+      function convertTimeToSeconds(timestamp) {
+        const [hours, minutes, seconds] = timestamp.split(":");
+        const totalSeconds =
+          parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds);
+
+        return totalSeconds;
+      }
+
+      loadVideo();
+    </script>
+  </body>
+</html>
