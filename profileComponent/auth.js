@@ -24,8 +24,8 @@ async function getUserInfo() {
     const data = await response.json();
     email = data.email;
     const res = await fetch(
-      // "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users",
-      "http://localhost:3001/api/user",
+      "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users",
+      // "http://localhost:3001/api/user",
       {
         method: "POST",
         headers: {
