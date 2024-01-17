@@ -22,8 +22,8 @@ fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
   .then((data) => {
     email = data.email;
     fetch(
-      // "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users",
-      "http://localhost:3001/api/user",
+      "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users",
+      // "http://localhost:3001/api/user",
       {
         method: "POST",
         headers: {
@@ -72,7 +72,8 @@ search.addEventListener("click", () => {
 // thats search a video like in the db
 function searchVideos(q = "") {
   const resultContainer = document.getElementById("app");
-  const apiUrl = `http://localhost:3001/api/video/search/${q}`;
+  // const apiUrl = `http://localhost:3001/api/video/search/${q}`;
+  const apiUrl = `https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/videos/search/${q}`;
 
   fetch(apiUrl)
     .then((res) => res.json())
@@ -110,16 +111,14 @@ function generateTableHTML(data) {
 function generateRowsHTML(data) {
   return data
     .filter(({ videoDetails }) => videoDetails && videoDetails.length > 0)
-    .map(({ videoDetails, urlWithoutHtml, user_name }) => {
+    .map(({ videoDetails, user_name }) => {
       const { title, url } = videoDetails[0];
       return `
         <tr>
           <th scope="row">${title}</th>
           <td><a target="_blank" href="https://drive.google.com/file/d/${url}">${title}</a></td>
           <td><p>${user_name}</p></td>
-          <td><button class="btn btn-primary" onclick="setVideo('${
-            urlWithoutHtml || "http://localhost:3000"
-          }', '${url}', '${title}', '${user_name}')">Ver</button></td>
+          <td><button class="btn btn-primary" onclick="setVideo('${urlWithoutHtml}', '${url}', '${title}', '${user_name}')">Ver</button></td>
         </tr>`;
     })
     .join("");
@@ -222,8 +221,8 @@ function setVideo(url, id, fileName, userName) {
   let views = 0;
   if (!userName) {
     fetch(
-      // `https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users/`
-      `http://localhost:3001/api/user/`
+      `https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users/`
+      // `http://localhost:3001/api/user/`
     )
       .then((res) => res.json())
       .then(({ data }) => {
@@ -243,8 +242,8 @@ function setVideo(url, id, fileName, userName) {
 
 function getVideosDB() {
   fetch(
-    // "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/videos/"
-    "http://localhost:3001/api/video"
+    "https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/videos/"
+    // "http://localhost:3001/api/video"
   )
     .then((res) => res.json())
     .then(({ data }) => {
