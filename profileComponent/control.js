@@ -218,8 +218,15 @@ function setVideo(url, id, fileName, userName) {
   console.log("click", url, id, fileName, userName);
   let views = 0;
   if (!userName) {
+<<<<<<< HEAD
     fetch()`https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users/`
       // `http://localhost:3001/api/user/`
+=======
+    fetch(
+      `https://stunning-capybara-1efe1a.netlify.app/.netlify/functions/api/users/`
+      // `http://localhost:3001/api/user/`
+    )
+>>>>>>> 1d5191f4a91de873f37d657c381fc44e201ac0c0
       .then((res) => res.json())
       .then(({ data }) => {
         console.log(data);

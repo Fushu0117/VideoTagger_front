@@ -107,6 +107,10 @@
           <p id="video-author"></p>
         </div>
         <div class="yt" id="yt"></div>
+        <a
+          id="url-drive"
+          href="https://drive.google.com/file/d/1IYm3Mcb8dRIMA5cwe-jzlyB17US96_O4/view?usp=sharing"
+        ></a>
         <div class="mt-2" id="botones">
           <button class="btn btn-outline-secondary m-1" id="btn-home">
             Regresar
@@ -130,7 +134,7 @@
             <div class="modal-content">
               <form>
                 <div class="modal-header">
-                  <h5 class="modal-title">Crear timestamp</h5>
+                  <h5 class="modal-title">Crear Etiqueta</h5>
                   <button
                     type="button"
                     class="btn-close"
@@ -232,6 +236,37 @@
         form.addEventListener("submit", handleFormSubmit);
 
         fetchComments(id, video.email);
+
+        // fetch(
+        //   "https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media"
+        // );
+
+        // // if fetch code is 403 Forbbiden
+
+        // // do this
+        // const urlDrive = document.querySelector("#url-drive");
+        // let url =
+        //   "https://drive.google.com/file/d/1IYm3Mcb8dRIMA5cwe-jzlyB17US96_O4/view?usp=sharing";
+        // urlDrive.innerHTML = url;
+
+        fetch(
+          `https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media`
+        )
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+          })
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => {
+            console.log("error1");
+            let urlDrive = document.querySelector("#url-drive");
+            let url = `https://drive.google.com/file/d/${id}/view?usp=sharing`;
+            urlDrive.innerHTML = url;
+          });
       }
 
       // Crea el reproductor de video
@@ -265,8 +300,45 @@
 
       // Navega al timestamp indicado
       function navigateToTimestamp(videoPlayer, timestamp) {
-        videoPlayer.currentTime = timestamp; // Seek to 2 minutes and 30 seconds
+        let urlDrive = document.querySelector("#url-drive");
+
+        // Assuming the current URL in urlDrive is like "https://drive.google.com/.../view?usp=sharing"
+        let currentUrl = urlDrive.innerHTML;
+
+        // Extract the file ID from the current URL
+        let fileId = currentUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+        fileId = fileId ? fileId[1] : "";
+
+        // If fileId exists, convert the timestamp to HH:MM:SS format
+        if (fileId) {
+          let formattedTimestamp = secondsToDriveFormat(timestamp);
+          console.log(formattedTimestamp);
+          let updatedUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing?t=${formattedTimestamp}`;
+          urlDrive.innerHTML = updatedUrl;
+        }
+
+        // Set the video player's current time and play
+        videoPlayer.currentTime = timestamp;
         videoPlayer.play();
+      }
+
+      function secondsToDriveFormat(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+
+        let formattedTimestamp = "";
+        if (hours > 0) {
+          formattedTimestamp += `${hours}h`;
+        }
+        if (minutes > 0 || (hours === 0 && remainingSeconds === 0)) {
+          formattedTimestamp += `${minutes}m`;
+        }
+        if (remainingSeconds > 0 || (hours === 0 && minutes === 0)) {
+          formattedTimestamp += `${remainingSeconds}s`;
+        }
+
+        return `${formattedTimestamp}`;
       }
 
       // Navega al perfil del usuario
