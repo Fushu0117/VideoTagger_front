@@ -199,7 +199,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get("id");
 
-        const videoUrl = `https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media`;
+        // const videoUrl = `https://www.googleapis.com/drive/v3/files/${id}?key=${API_KEY}&alt=media`;
+        const videoUrl = `https://drive.google.com/file/d/${id}/preview`;
         videoPlayer = createVideoPlayer(videoUrl);
 
         const playerDiv = document.getElementById("yt");
@@ -262,26 +263,23 @@
             console.log(data);
           })
           .catch((error) => {
-            console.log("error1");
-            let urlDrive = document.querySelector("#url-drive");
-            let url = `https://drive.google.com/file/d/${id}/view?usp=sharing`;
-            urlDrive.innerHTML = url;
+            // console.log("error1");
+            // let urlDrive = document.querySelector("#url-drive");
+            // let url = `https://drive.google.com/file/d/${id}/view?usp=sharing`;
+            // urlDrive.innerHTML = url;
           });
       }
 
       // Crea el reproductor de video
       function createVideoPlayer(videoUrl) {
-        const videoPlayer = document.createElement("video");
-        videoPlayer.controls = true;
+        const videoPlayer = document.createElement("iframe");
         videoPlayer.width = "560";
         videoPlayer.height = "315";
         videoPlayer.classList.add("border-2");
-
-        const source = document.createElement("source");
-        source.type = "video/mp4";
-        source.src = videoUrl;
-        videoPlayer.appendChild(source);
-
+        videoPlayer.src = videoUrl;
+        videoPlayer.allow =
+          "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture";
+        videoPlayer.allowfullscreen = true;
         return videoPlayer;
       }
 
@@ -298,24 +296,40 @@
         video_author.innerHTML = video.user_name;
       }
 
+      // // Navega al timestamp indicado
+      // function navigateToTimestamp(videoPlayer, timestamp) {
+      //   let urlDrive = document.querySelector("#url-drive");
+
+      //   // Assuming the current URL in urlDrive is like "https://drive.google.com/.../view?usp=sharing"
+      //   let currentUrl = urlDrive.innerHTML;
+
+      //   // Extract the file ID from the current URL
+      //   let fileId = currentUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+      //   fileId = fileId ? fileId[1] : "";
+
+      //   // If fileId exists, convert the timestamp to HH:MM:SS format
+      //   if (fileId) {
+      //     let formattedTimestamp = secondsToDriveFormat(timestamp);
+      //     console.log(formattedTimestamp);
+      //     let updatedUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing?t=${formattedTimestamp}`;
+      //     urlDrive.innerHTML = updatedUrl;
+      //   }
+
+      //   // Set the video player's current time and play
+      //   videoPlayer.currentTime = timestamp;
+      //   videoPlayer.play();
+      // }
+
+      // Navega al timestamp indicado
       // Navega al timestamp indicado
       function navigateToTimestamp(videoPlayer, timestamp) {
-        let urlDrive = document.querySelector("#url-drive");
+        const iframe = document.querySelector(".yt iframe");
+        let src = iframe.src;
 
-        // Assuming the current URL in urlDrive is like "https://drive.google.com/.../view?usp=sharing"
-        let currentUrl = urlDrive.innerHTML;
-
-        // Extract the file ID from the current URL
-        let fileId = currentUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
-        fileId = fileId ? fileId[1] : "";
-
-        // If fileId exists, convert the timestamp to HH:MM:SS format
-        if (fileId) {
-          let formattedTimestamp = secondsToDriveFormat(timestamp);
-          console.log(formattedTimestamp);
-          let updatedUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing?t=${formattedTimestamp}`;
-          urlDrive.innerHTML = updatedUrl;
-        }
+        // Update the timestamp parameter in the URL
+        const url = new URL(src);
+        url.searchParams.set("t", secondsToDriveFormat(timestamp));
+        iframe.src = url.href;
 
         // Set the video player's current time and play
         videoPlayer.currentTime = timestamp;
